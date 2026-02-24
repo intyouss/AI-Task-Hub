@@ -10,13 +10,26 @@ import (
 var (
 	// TasksColumns holds the columns for the "tasks" table.
 	TasksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "model_name", Type: field.TypeString},
+		{Name: "prompt", Type: field.TypeString, Size: 2147483647},
+		{Name: "output", Type: field.TypeString, Size: 2147483647},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "processing", "completed", "failed"}},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// TasksTable holds the schema information for the "tasks" table.
 	TasksTable = &schema.Table{
 		Name:       "tasks",
 		Columns:    TasksColumns,
 		PrimaryKey: []*schema.Column{TasksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "tasks_users_tasks",
+				Columns:    []*schema.Column{TasksColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// TimeMixinsColumns holds the columns for the "time_mixins" table.
 	TimeMixinsColumns = []*schema.Column{
@@ -32,7 +45,7 @@ var (
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "nickname", Type: field.TypeString},
-		{Name: "api_key", Type: field.TypeString},
+		{Name: "api_key", Type: field.TypeString, Unique: true},
 		{Name: "phone", Type: field.TypeString, Default: ""},
 		{Name: "email", Type: field.TypeString, Default: ""},
 	}
@@ -51,4 +64,5 @@ var (
 )
 
 func init() {
+	TasksTable.ForeignKeys[0].RefTable = UsersTable
 }

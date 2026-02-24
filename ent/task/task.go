@@ -3,8 +3,12 @@
 package task
 
 import (
+	"fmt"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -12,13 +16,37 @@ const (
 	Label = "task"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldModelName holds the string denoting the model_name field in the database.
+	FieldModelName = "model_name"
+	// FieldPrompt holds the string denoting the prompt field in the database.
+	FieldPrompt = "prompt"
+	// FieldOutput holds the string denoting the output field in the database.
+	FieldOutput = "output"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// Table holds the table name of the task in the database.
 	Table = "tasks"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "tasks"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for task fields.
 var Columns = []string{
 	FieldID,
+	FieldModelName,
+	FieldPrompt,
+	FieldOutput,
+	FieldStatus,
+	FieldUserID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -38,7 +66,34 @@ func ValidColumn(column string) bool {
 //	import _ "github.com/intyouss/AI-Task-Hub/ent/runtime"
 var (
 	Hooks [2]ent.Hook
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
+
+// Status defines the type for the "status" enum field.
+type Status string
+
+// Status values.
+const (
+	StatusPending    Status = "pending"
+	StatusProcessing Status = "processing"
+	StatusCompleted  Status = "completed"
+	StatusFailed     Status = "failed"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusPending, StatusProcessing, StatusCompleted, StatusFailed:
+		return nil
+	default:
+		return fmt.Errorf("task: invalid enum value for status field: %q", s)
+	}
+}
 
 // OrderOption defines the ordering options for the Task queries.
 type OrderOption func(*sql.Selector)
@@ -46,4 +101,43 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByModelName orders the results by the model_name field.
+func ByModelName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldModelName, opts...).ToFunc()
+}
+
+// ByPrompt orders the results by the prompt field.
+func ByPrompt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPrompt, opts...).ToFunc()
+}
+
+// ByOutput orders the results by the output field.
+func ByOutput(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOutput, opts...).ToFunc()
+}
+
+// ByStatus orders the results by the status field.
+func ByStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
+}
+
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newUserStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+	)
 }

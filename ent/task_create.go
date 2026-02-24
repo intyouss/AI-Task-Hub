@@ -4,11 +4,14 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/intyouss/AI-Task-Hub/ent/task"
+	"github.com/intyouss/AI-Task-Hub/ent/user"
 )
 
 // TaskCreate is the builder for creating a Task entity.
@@ -18,6 +21,55 @@ type TaskCreate struct {
 	hooks    []Hook
 }
 
+// SetModelName sets the "model_name" field.
+func (_c *TaskCreate) SetModelName(v string) *TaskCreate {
+	_c.mutation.SetModelName(v)
+	return _c
+}
+
+// SetPrompt sets the "prompt" field.
+func (_c *TaskCreate) SetPrompt(v string) *TaskCreate {
+	_c.mutation.SetPrompt(v)
+	return _c
+}
+
+// SetOutput sets the "output" field.
+func (_c *TaskCreate) SetOutput(v string) *TaskCreate {
+	_c.mutation.SetOutput(v)
+	return _c
+}
+
+// SetStatus sets the "status" field.
+func (_c *TaskCreate) SetStatus(v task.Status) *TaskCreate {
+	_c.mutation.SetStatus(v)
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *TaskCreate) SetUserID(v uuid.UUID) *TaskCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *TaskCreate) SetID(v uuid.UUID) *TaskCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableID(v *uuid.UUID) *TaskCreate {
+	if v != nil {
+		_c.SetID(*v)
+	}
+	return _c
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_c *TaskCreate) SetUser(v *User) *TaskCreate {
+	return _c.SetUserID(v.ID)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (_c *TaskCreate) Mutation() *TaskMutation {
 	return _c.mutation
@@ -25,6 +77,9 @@ func (_c *TaskCreate) Mutation() *TaskMutation {
 
 // Save creates the Task in the database.
 func (_c *TaskCreate) Save(ctx context.Context) (*Task, error) {
+	if err := _c.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -50,8 +105,43 @@ func (_c *TaskCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (_c *TaskCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
+		if task.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized task.DefaultID (forgotten import ent/runtime?)")
+		}
+		v := task.DefaultID()
+		_c.mutation.SetID(v)
+	}
+	return nil
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (_c *TaskCreate) check() error {
+	if _, ok := _c.mutation.ModelName(); !ok {
+		return &ValidationError{Name: "model_name", err: errors.New(`ent: missing required field "Task.model_name"`)}
+	}
+	if _, ok := _c.mutation.Prompt(); !ok {
+		return &ValidationError{Name: "prompt", err: errors.New(`ent: missing required field "Task.prompt"`)}
+	}
+	if _, ok := _c.mutation.Output(); !ok {
+		return &ValidationError{Name: "output", err: errors.New(`ent: missing required field "Task.output"`)}
+	}
+	if _, ok := _c.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Task.status"`)}
+	}
+	if v, ok := _c.mutation.Status(); ok {
+		if err := task.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Task.status": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Task.user_id"`)}
+	}
+	if len(_c.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Task.user"`)}
+	}
 	return nil
 }
 
@@ -66,8 +156,13 @@ func (_c *TaskCreate) sqlSave(ctx context.Context) (*Task, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -76,8 +171,45 @@ func (_c *TaskCreate) sqlSave(ctx context.Context) (*Task, error) {
 func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Task{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(task.Table, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(task.Table, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
 	)
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := _c.mutation.ModelName(); ok {
+		_spec.SetField(task.FieldModelName, field.TypeString, value)
+		_node.ModelName = value
+	}
+	if value, ok := _c.mutation.Prompt(); ok {
+		_spec.SetField(task.FieldPrompt, field.TypeString, value)
+		_node.Prompt = value
+	}
+	if value, ok := _c.mutation.Output(); ok {
+		_spec.SetField(task.FieldOutput, field.TypeString, value)
+		_node.Output = value
+	}
+	if value, ok := _c.mutation.Status(); ok {
+		_spec.SetField(task.FieldStatus, field.TypeEnum, value)
+		_node.Status = value
+	}
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.UserTable,
+			Columns: []string{task.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -99,6 +231,7 @@ func (_c *TaskCreateBulk) Save(ctx context.Context) ([]*Task, error) {
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*TaskMutation)
 				if !ok {
@@ -125,10 +258,6 @@ func (_c *TaskCreateBulk) Save(ctx context.Context) ([]*Task, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

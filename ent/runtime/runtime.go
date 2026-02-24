@@ -18,6 +18,12 @@ func init() {
 	taskMixinHooks0 := taskMixin[0].Hooks()
 	task.Hooks[0] = taskMixinHooks0[0]
 	task.Hooks[1] = taskMixinHooks0[1]
+	taskFields := schema.Task{}.Fields()
+	_ = taskFields
+	// taskDescID is the schema descriptor for id field.
+	taskDescID := taskFields[0].Descriptor()
+	// task.DefaultID holds the default value on creation for the id field.
+	task.DefaultID = taskDescID.Default.(func() uuid.UUID)
 	timemixinHooks := schema.TimeMixin{}.Hooks()
 	timemixin.Hooks[0] = timemixinHooks[0]
 	timemixin.Hooks[1] = timemixinHooks[1]

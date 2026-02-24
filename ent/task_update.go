@@ -10,8 +10,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/intyouss/AI-Task-Hub/ent/predicate"
 	"github.com/intyouss/AI-Task-Hub/ent/task"
+	"github.com/intyouss/AI-Task-Hub/ent/user"
 )
 
 // TaskUpdate is the builder for updating Task entities.
@@ -27,9 +29,90 @@ func (_u *TaskUpdate) Where(ps ...predicate.Task) *TaskUpdate {
 	return _u
 }
 
+// SetModelName sets the "model_name" field.
+func (_u *TaskUpdate) SetModelName(v string) *TaskUpdate {
+	_u.mutation.SetModelName(v)
+	return _u
+}
+
+// SetNillableModelName sets the "model_name" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableModelName(v *string) *TaskUpdate {
+	if v != nil {
+		_u.SetModelName(*v)
+	}
+	return _u
+}
+
+// SetPrompt sets the "prompt" field.
+func (_u *TaskUpdate) SetPrompt(v string) *TaskUpdate {
+	_u.mutation.SetPrompt(v)
+	return _u
+}
+
+// SetNillablePrompt sets the "prompt" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillablePrompt(v *string) *TaskUpdate {
+	if v != nil {
+		_u.SetPrompt(*v)
+	}
+	return _u
+}
+
+// SetOutput sets the "output" field.
+func (_u *TaskUpdate) SetOutput(v string) *TaskUpdate {
+	_u.mutation.SetOutput(v)
+	return _u
+}
+
+// SetNillableOutput sets the "output" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableOutput(v *string) *TaskUpdate {
+	if v != nil {
+		_u.SetOutput(*v)
+	}
+	return _u
+}
+
+// SetStatus sets the "status" field.
+func (_u *TaskUpdate) SetStatus(v task.Status) *TaskUpdate {
+	_u.mutation.SetStatus(v)
+	return _u
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableStatus(v *task.Status) *TaskUpdate {
+	if v != nil {
+		_u.SetStatus(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *TaskUpdate) SetUserID(v uuid.UUID) *TaskUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableUserID(v *uuid.UUID) *TaskUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_u *TaskUpdate) SetUser(v *User) *TaskUpdate {
+	return _u.SetUserID(v.ID)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (_u *TaskUpdate) Mutation() *TaskMutation {
 	return _u.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *TaskUpdate) ClearUser() *TaskUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -59,14 +142,71 @@ func (_u *TaskUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *TaskUpdate) check() error {
+	if v, ok := _u.mutation.Status(); ok {
+		if err := task.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Task.status": %w`, err)}
+		}
+	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Task.user"`)
+	}
+	return nil
+}
+
 func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.ModelName(); ok {
+		_spec.SetField(task.FieldModelName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Prompt(); ok {
+		_spec.SetField(task.FieldPrompt, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Output(); ok {
+		_spec.SetField(task.FieldOutput, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Status(); ok {
+		_spec.SetField(task.FieldStatus, field.TypeEnum, value)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.UserTable,
+			Columns: []string{task.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.UserTable,
+			Columns: []string{task.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -88,9 +228,90 @@ type TaskUpdateOne struct {
 	mutation *TaskMutation
 }
 
+// SetModelName sets the "model_name" field.
+func (_u *TaskUpdateOne) SetModelName(v string) *TaskUpdateOne {
+	_u.mutation.SetModelName(v)
+	return _u
+}
+
+// SetNillableModelName sets the "model_name" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableModelName(v *string) *TaskUpdateOne {
+	if v != nil {
+		_u.SetModelName(*v)
+	}
+	return _u
+}
+
+// SetPrompt sets the "prompt" field.
+func (_u *TaskUpdateOne) SetPrompt(v string) *TaskUpdateOne {
+	_u.mutation.SetPrompt(v)
+	return _u
+}
+
+// SetNillablePrompt sets the "prompt" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillablePrompt(v *string) *TaskUpdateOne {
+	if v != nil {
+		_u.SetPrompt(*v)
+	}
+	return _u
+}
+
+// SetOutput sets the "output" field.
+func (_u *TaskUpdateOne) SetOutput(v string) *TaskUpdateOne {
+	_u.mutation.SetOutput(v)
+	return _u
+}
+
+// SetNillableOutput sets the "output" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableOutput(v *string) *TaskUpdateOne {
+	if v != nil {
+		_u.SetOutput(*v)
+	}
+	return _u
+}
+
+// SetStatus sets the "status" field.
+func (_u *TaskUpdateOne) SetStatus(v task.Status) *TaskUpdateOne {
+	_u.mutation.SetStatus(v)
+	return _u
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableStatus(v *task.Status) *TaskUpdateOne {
+	if v != nil {
+		_u.SetStatus(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *TaskUpdateOne) SetUserID(v uuid.UUID) *TaskUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableUserID(v *uuid.UUID) *TaskUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_u *TaskUpdateOne) SetUser(v *User) *TaskUpdateOne {
+	return _u.SetUserID(v.ID)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (_u *TaskUpdateOne) Mutation() *TaskMutation {
 	return _u.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *TaskUpdateOne) ClearUser() *TaskUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Where appends a list predicates to the TaskUpdate builder.
@@ -133,8 +354,24 @@ func (_u *TaskUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *TaskUpdateOne) check() error {
+	if v, ok := _u.mutation.Status(); ok {
+		if err := task.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Task.status": %w`, err)}
+		}
+	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Task.user"`)
+	}
+	return nil
+}
+
 func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
-	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Task.id" for update`)}
@@ -158,6 +395,47 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.ModelName(); ok {
+		_spec.SetField(task.FieldModelName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Prompt(); ok {
+		_spec.SetField(task.FieldPrompt, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Output(); ok {
+		_spec.SetField(task.FieldOutput, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Status(); ok {
+		_spec.SetField(task.FieldStatus, field.TypeEnum, value)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.UserTable,
+			Columns: []string{task.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.UserTable,
+			Columns: []string{task.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Task{config: _u.config}
 	_spec.Assign = _node.assignValues
