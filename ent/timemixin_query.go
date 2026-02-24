@@ -258,6 +258,18 @@ func (_q *TimeMixinQuery) Clone() *TimeMixinQuery {
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.TimeMixin.Query().
+//		GroupBy(timemixin.FieldCreatedAt).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (_q *TimeMixinQuery) GroupBy(field string, fields ...string) *TimeMixinGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &TimeMixinGroupBy{build: _q}
@@ -269,6 +281,16 @@ func (_q *TimeMixinQuery) GroupBy(field string, fields ...string) *TimeMixinGrou
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		CreatedAt time.Time `json:"created_at,omitempty"`
+//	}
+//
+//	client.TimeMixin.Query().
+//		Select(timemixin.FieldCreatedAt).
+//		Scan(ctx, &v)
 func (_q *TimeMixinQuery) Select(fields ...string) *TimeMixinSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
 	sbuild := &TimeMixinSelect{TimeMixinQuery: _q}

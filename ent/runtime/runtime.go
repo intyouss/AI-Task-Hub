@@ -16,8 +16,10 @@ import (
 func init() {
 	taskMixin := schema.Task{}.Mixin()
 	taskMixinHooks0 := taskMixin[0].Hooks()
+	taskHooks := schema.Task{}.Hooks()
 	task.Hooks[0] = taskMixinHooks0[0]
 	task.Hooks[1] = taskMixinHooks0[1]
+	task.Hooks[2] = taskHooks[0]
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescID is the schema descriptor for id field.

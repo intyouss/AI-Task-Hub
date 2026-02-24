@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -16,6 +17,34 @@ type TimeMixinCreate struct {
 	config
 	mutation *TimeMixinMutation
 	hooks    []Hook
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (_c *TimeMixinCreate) SetCreatedAt(v time.Time) *TimeMixinCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *TimeMixinCreate) SetNillableCreatedAt(v *time.Time) *TimeMixinCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *TimeMixinCreate) SetUpdatedAt(v time.Time) *TimeMixinCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *TimeMixinCreate) SetNillableUpdatedAt(v *time.Time) *TimeMixinCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
+	}
+	return _c
 }
 
 // Mutation returns the TimeMixinMutation object of the builder.
@@ -78,6 +107,14 @@ func (_c *TimeMixinCreate) createSpec() (*TimeMixin, *sqlgraph.CreateSpec) {
 		_node = &TimeMixin{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(timemixin.Table, sqlgraph.NewFieldSpec(timemixin.FieldID, field.TypeInt))
 	)
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(timemixin.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = &value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(timemixin.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = &value
+	}
 	return _node, _spec
 }
 

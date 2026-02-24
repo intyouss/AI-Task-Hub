@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -24,6 +25,46 @@ type TimeMixinUpdate struct {
 // Where appends a list predicates to the TimeMixinUpdate builder.
 func (_u *TimeMixinUpdate) Where(ps ...predicate.TimeMixin) *TimeMixinUpdate {
 	_u.mutation.Where(ps...)
+	return _u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (_u *TimeMixinUpdate) SetCreatedAt(v time.Time) *TimeMixinUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *TimeMixinUpdate) SetNillableCreatedAt(v *time.Time) *TimeMixinUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (_u *TimeMixinUpdate) ClearCreatedAt() *TimeMixinUpdate {
+	_u.mutation.ClearCreatedAt()
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *TimeMixinUpdate) SetUpdatedAt(v time.Time) *TimeMixinUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_u *TimeMixinUpdate) SetNillableUpdatedAt(v *time.Time) *TimeMixinUpdate {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
+	}
+	return _u
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (_u *TimeMixinUpdate) ClearUpdatedAt() *TimeMixinUpdate {
+	_u.mutation.ClearUpdatedAt()
 	return _u
 }
 
@@ -68,6 +109,18 @@ func (_u *TimeMixinUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(timemixin.FieldCreatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.CreatedAtCleared() {
+		_spec.ClearField(timemixin.FieldCreatedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(timemixin.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.UpdatedAtCleared() {
+		_spec.ClearField(timemixin.FieldUpdatedAt, field.TypeTime)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{timemixin.Label}
@@ -86,6 +139,46 @@ type TimeMixinUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *TimeMixinMutation
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (_u *TimeMixinUpdateOne) SetCreatedAt(v time.Time) *TimeMixinUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *TimeMixinUpdateOne) SetNillableCreatedAt(v *time.Time) *TimeMixinUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (_u *TimeMixinUpdateOne) ClearCreatedAt() *TimeMixinUpdateOne {
+	_u.mutation.ClearCreatedAt()
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *TimeMixinUpdateOne) SetUpdatedAt(v time.Time) *TimeMixinUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_u *TimeMixinUpdateOne) SetNillableUpdatedAt(v *time.Time) *TimeMixinUpdateOne {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
+	}
+	return _u
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (_u *TimeMixinUpdateOne) ClearUpdatedAt() *TimeMixinUpdateOne {
+	_u.mutation.ClearUpdatedAt()
+	return _u
 }
 
 // Mutation returns the TimeMixinMutation object of the builder.
@@ -158,6 +251,18 @@ func (_u *TimeMixinUpdateOne) sqlSave(ctx context.Context) (_node *TimeMixin, er
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(timemixin.FieldCreatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.CreatedAtCleared() {
+		_spec.ClearField(timemixin.FieldCreatedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(timemixin.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.UpdatedAtCleared() {
+		_spec.ClearField(timemixin.FieldUpdatedAt, field.TypeTime)
 	}
 	_node = &TimeMixin{config: _u.config}
 	_spec.Assign = _node.assignValues

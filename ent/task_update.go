@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,46 @@ type TaskUpdate struct {
 // Where appends a list predicates to the TaskUpdate builder.
 func (_u *TaskUpdate) Where(ps ...predicate.Task) *TaskUpdate {
 	_u.mutation.Where(ps...)
+	return _u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (_u *TaskUpdate) SetCreatedAt(v time.Time) *TaskUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableCreatedAt(v *time.Time) *TaskUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (_u *TaskUpdate) ClearCreatedAt() *TaskUpdate {
+	_u.mutation.ClearCreatedAt()
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *TaskUpdate) SetUpdatedAt(v time.Time) *TaskUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableUpdatedAt(v *time.Time) *TaskUpdate {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
+	}
+	return _u
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (_u *TaskUpdate) ClearUpdatedAt() *TaskUpdate {
+	_u.mutation.ClearUpdatedAt()
 	return _u
 }
 
@@ -99,6 +140,26 @@ func (_u *TaskUpdate) SetNillableUserID(v *uuid.UUID) *TaskUpdate {
 	return _u
 }
 
+// SetFinishedAt sets the "finished_at" field.
+func (_u *TaskUpdate) SetFinishedAt(v time.Time) *TaskUpdate {
+	_u.mutation.SetFinishedAt(v)
+	return _u
+}
+
+// SetNillableFinishedAt sets the "finished_at" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableFinishedAt(v *time.Time) *TaskUpdate {
+	if v != nil {
+		_u.SetFinishedAt(*v)
+	}
+	return _u
+}
+
+// ClearFinishedAt clears the value of the "finished_at" field.
+func (_u *TaskUpdate) ClearFinishedAt() *TaskUpdate {
+	_u.mutation.ClearFinishedAt()
+	return _u
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (_u *TaskUpdate) SetUser(v *User) *TaskUpdate {
 	return _u.SetUserID(v.ID)
@@ -167,6 +228,18 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(task.FieldCreatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.CreatedAtCleared() {
+		_spec.ClearField(task.FieldCreatedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(task.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.UpdatedAtCleared() {
+		_spec.ClearField(task.FieldUpdatedAt, field.TypeTime)
+	}
 	if value, ok := _u.mutation.ModelName(); ok {
 		_spec.SetField(task.FieldModelName, field.TypeString, value)
 	}
@@ -178,6 +251,12 @@ func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(task.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.FinishedAt(); ok {
+		_spec.SetField(task.FieldFinishedAt, field.TypeTime, value)
+	}
+	if _u.mutation.FinishedAtCleared() {
+		_spec.ClearField(task.FieldFinishedAt, field.TypeTime)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -226,6 +305,46 @@ type TaskUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *TaskMutation
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (_u *TaskUpdateOne) SetCreatedAt(v time.Time) *TaskUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableCreatedAt(v *time.Time) *TaskUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (_u *TaskUpdateOne) ClearCreatedAt() *TaskUpdateOne {
+	_u.mutation.ClearCreatedAt()
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *TaskUpdateOne) SetUpdatedAt(v time.Time) *TaskUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableUpdatedAt(v *time.Time) *TaskUpdateOne {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
+	}
+	return _u
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (_u *TaskUpdateOne) ClearUpdatedAt() *TaskUpdateOne {
+	_u.mutation.ClearUpdatedAt()
+	return _u
 }
 
 // SetModelName sets the "model_name" field.
@@ -295,6 +414,26 @@ func (_u *TaskUpdateOne) SetNillableUserID(v *uuid.UUID) *TaskUpdateOne {
 	if v != nil {
 		_u.SetUserID(*v)
 	}
+	return _u
+}
+
+// SetFinishedAt sets the "finished_at" field.
+func (_u *TaskUpdateOne) SetFinishedAt(v time.Time) *TaskUpdateOne {
+	_u.mutation.SetFinishedAt(v)
+	return _u
+}
+
+// SetNillableFinishedAt sets the "finished_at" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableFinishedAt(v *time.Time) *TaskUpdateOne {
+	if v != nil {
+		_u.SetFinishedAt(*v)
+	}
+	return _u
+}
+
+// ClearFinishedAt clears the value of the "finished_at" field.
+func (_u *TaskUpdateOne) ClearFinishedAt() *TaskUpdateOne {
+	_u.mutation.ClearFinishedAt()
 	return _u
 }
 
@@ -396,6 +535,18 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(task.FieldCreatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.CreatedAtCleared() {
+		_spec.ClearField(task.FieldCreatedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(task.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.UpdatedAtCleared() {
+		_spec.ClearField(task.FieldUpdatedAt, field.TypeTime)
+	}
 	if value, ok := _u.mutation.ModelName(); ok {
 		_spec.SetField(task.FieldModelName, field.TypeString, value)
 	}
@@ -407,6 +558,12 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(task.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.FinishedAt(); ok {
+		_spec.SetField(task.FieldFinishedAt, field.TypeTime, value)
+	}
+	if _u.mutation.FinishedAtCleared() {
+		_spec.ClearField(task.FieldFinishedAt, field.TypeTime)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
