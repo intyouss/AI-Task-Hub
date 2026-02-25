@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/schema/field"
 	gen "github.com/intyouss/AI-Task-Hub/ent"
 	"github.com/intyouss/AI-Task-Hub/ent/hook"
+	"github.com/intyouss/AI-Task-Hub/ent/intercept"
 )
 
 type TimeMixin struct {
@@ -69,6 +70,9 @@ func (d SoftDeleteMixin) Hooks() []ent.Hook {
 		hook.On(
 			func(mutator ent.Mutator) ent.Mutator {
 				return ent.MutateFunc(func(ctx context.Context, mutation ent.Mutation) (ent.Value, error) {
+					if skip, _ := ctx.Value(softDeleteKey{}).(bool); skip {
+						return mutator.Mutate(ctx, mutation)
+					}
 
 					mx, ok := mutation.(interface {
 						SetOp(ent.Op)
@@ -90,15 +94,26 @@ func (d SoftDeleteMixin) Hooks() []ent.Hook {
 
 func (d SoftDeleteMixin) Interceptors() []ent.Interceptor {
 	return []ent.Interceptor{
-		ent.TraverseFunc(func(ctx context.Context, query ent.Query) error {
+		intercept.TraverseFunc(func(ctx context.Context, query intercept.Query) error {
+			if skip, _ := ctx.Value(softDeleteKey{}).(bool); skip {
+				return nil
+			}
+			d.P(query)
 			return nil
 		}),
 	}
 }
 
-// P adds a storage-level predicate to the queries and mutations.
+// P 添加软删除查询条件
 func (d SoftDeleteMixin) P(w interface{ WhereP(...func(*sql.Selector)) }) {
 	w.WhereP(
 		sql.FieldIsNull(d.Fields()[0].Descriptor().Name),
 	)
+}
+
+type softDeleteKey struct{}
+
+// SkipSoftDelete 跳过软删除
+func SkipSoftDelete(parent context.Context) context.Context {
+	return context.WithValue(parent, softDeleteKey{}, true)
 }
