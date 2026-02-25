@@ -17,8 +17,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/intyouss/AI-Task-Hub/ent/task"
-	"github.com/intyouss/AI-Task-Hub/ent/timemixin"
 	"github.com/intyouss/AI-Task-Hub/ent/user"
+
+	stdsql "database/sql"
 )
 
 // Client is the client that holds all ent builders.
@@ -28,8 +29,6 @@ type Client struct {
 	Schema *migrate.Schema
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
-	// TimeMixin is the client for interacting with the TimeMixin builders.
-	TimeMixin *TimeMixinClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -44,7 +43,6 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Task = NewTaskClient(c.config)
-	c.TimeMixin = NewTimeMixinClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -136,11 +134,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:       ctx,
-		config:    cfg,
-		Task:      NewTaskClient(cfg),
-		TimeMixin: NewTimeMixinClient(cfg),
-		User:      NewUserClient(cfg),
+		ctx:    ctx,
+		config: cfg,
+		Task:   NewTaskClient(cfg),
+		User:   NewUserClient(cfg),
 	}, nil
 }
 
@@ -158,11 +155,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:       ctx,
-		config:    cfg,
-		Task:      NewTaskClient(cfg),
-		TimeMixin: NewTimeMixinClient(cfg),
-		User:      NewUserClient(cfg),
+		ctx:    ctx,
+		config: cfg,
+		Task:   NewTaskClient(cfg),
+		User:   NewUserClient(cfg),
 	}, nil
 }
 
@@ -192,7 +188,6 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Task.Use(hooks...)
-	c.TimeMixin.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -200,7 +195,6 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Task.Intercept(interceptors...)
-	c.TimeMixin.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
@@ -209,8 +203,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *TaskMutation:
 		return c.Task.mutate(ctx, m)
-	case *TimeMixinMutation:
-		return c.TimeMixin.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -368,140 +360,6 @@ func (c *TaskClient) mutate(ctx context.Context, m *TaskMutation) (Value, error)
 	}
 }
 
-// TimeMixinClient is a client for the TimeMixin schema.
-type TimeMixinClient struct {
-	config
-}
-
-// NewTimeMixinClient returns a client for the TimeMixin from the given config.
-func NewTimeMixinClient(c config) *TimeMixinClient {
-	return &TimeMixinClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `timemixin.Hooks(f(g(h())))`.
-func (c *TimeMixinClient) Use(hooks ...Hook) {
-	c.hooks.TimeMixin = append(c.hooks.TimeMixin, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `timemixin.Intercept(f(g(h())))`.
-func (c *TimeMixinClient) Intercept(interceptors ...Interceptor) {
-	c.inters.TimeMixin = append(c.inters.TimeMixin, interceptors...)
-}
-
-// Create returns a builder for creating a TimeMixin entity.
-func (c *TimeMixinClient) Create() *TimeMixinCreate {
-	mutation := newTimeMixinMutation(c.config, OpCreate)
-	return &TimeMixinCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of TimeMixin entities.
-func (c *TimeMixinClient) CreateBulk(builders ...*TimeMixinCreate) *TimeMixinCreateBulk {
-	return &TimeMixinCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *TimeMixinClient) MapCreateBulk(slice any, setFunc func(*TimeMixinCreate, int)) *TimeMixinCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &TimeMixinCreateBulk{err: fmt.Errorf("calling to TimeMixinClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*TimeMixinCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &TimeMixinCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for TimeMixin.
-func (c *TimeMixinClient) Update() *TimeMixinUpdate {
-	mutation := newTimeMixinMutation(c.config, OpUpdate)
-	return &TimeMixinUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *TimeMixinClient) UpdateOne(_m *TimeMixin) *TimeMixinUpdateOne {
-	mutation := newTimeMixinMutation(c.config, OpUpdateOne, withTimeMixin(_m))
-	return &TimeMixinUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *TimeMixinClient) UpdateOneID(id int) *TimeMixinUpdateOne {
-	mutation := newTimeMixinMutation(c.config, OpUpdateOne, withTimeMixinID(id))
-	return &TimeMixinUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for TimeMixin.
-func (c *TimeMixinClient) Delete() *TimeMixinDelete {
-	mutation := newTimeMixinMutation(c.config, OpDelete)
-	return &TimeMixinDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *TimeMixinClient) DeleteOne(_m *TimeMixin) *TimeMixinDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *TimeMixinClient) DeleteOneID(id int) *TimeMixinDeleteOne {
-	builder := c.Delete().Where(timemixin.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &TimeMixinDeleteOne{builder}
-}
-
-// Query returns a query builder for TimeMixin.
-func (c *TimeMixinClient) Query() *TimeMixinQuery {
-	return &TimeMixinQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeTimeMixin},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a TimeMixin entity by its id.
-func (c *TimeMixinClient) Get(ctx context.Context, id int) (*TimeMixin, error) {
-	return c.Query().Where(timemixin.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *TimeMixinClient) GetX(ctx context.Context, id int) *TimeMixin {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *TimeMixinClient) Hooks() []Hook {
-	hooks := c.hooks.TimeMixin
-	return append(hooks[:len(hooks):len(hooks)], timemixin.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *TimeMixinClient) Interceptors() []Interceptor {
-	return c.inters.TimeMixin
-}
-
-func (c *TimeMixinClient) mutate(ctx context.Context, m *TimeMixinMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&TimeMixinCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&TimeMixinUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&TimeMixinUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&TimeMixinDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown TimeMixin mutation op: %q", m.Op())
-	}
-}
-
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -655,9 +513,33 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Task, TimeMixin, User []ent.Hook
+		Task, User []ent.Hook
 	}
 	inters struct {
-		Task, TimeMixin, User []ent.Interceptor
+		Task, User []ent.Interceptor
 	}
 )
+
+// ExecContext allows calling the underlying ExecContext method of the driver if it is supported by it.
+// See, database/sql#DB.ExecContext for more information.
+func (c *config) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
+	ex, ok := c.driver.(interface {
+		ExecContext(context.Context, string, ...any) (stdsql.Result, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.ExecContext is not supported")
+	}
+	return ex.ExecContext(ctx, query, args...)
+}
+
+// QueryContext allows calling the underlying QueryContext method of the driver if it is supported by it.
+// See, database/sql#DB.QueryContext for more information.
+func (c *config) QueryContext(ctx context.Context, query string, args ...any) (*stdsql.Rows, error) {
+	q, ok := c.driver.(interface {
+		QueryContext(context.Context, string, ...any) (*stdsql.Rows, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.QueryContext is not supported")
+	}
+	return q.QueryContext(ctx, query, args...)
+}

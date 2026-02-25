@@ -34,18 +34,6 @@ var (
 			},
 		},
 	}
-	// TimeMixinsColumns holds the columns for the "time_mixins" table.
-	TimeMixinsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "created_at", Type: field.TypeTime, Nullable: true},
-		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
-	}
-	// TimeMixinsTable holds the schema information for the "time_mixins" table.
-	TimeMixinsTable = &schema.Table{
-		Name:       "time_mixins",
-		Columns:    TimeMixinsColumns,
-		PrimaryKey: []*schema.Column{TimeMixinsColumns[0]},
-	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -65,7 +53,6 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		TasksTable,
-		TimeMixinsTable,
 		UsersTable,
 	}
 )

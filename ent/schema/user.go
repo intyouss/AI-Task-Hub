@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/intyouss/AI-Task-Hub/ent/schema/hooks"
 )
 
 // User holds the schema definition for the User entity.
@@ -32,6 +33,6 @@ func (User) Edges() []ent.Edge {
 
 func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		TimeMixin{},
+		hooks.TimeMixin{},
 	}
 }

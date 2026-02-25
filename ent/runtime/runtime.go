@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/intyouss/AI-Task-Hub/ent/schema"
 	"github.com/intyouss/AI-Task-Hub/ent/task"
-	"github.com/intyouss/AI-Task-Hub/ent/timemixin"
 	"github.com/intyouss/AI-Task-Hub/ent/user"
 )
 
@@ -26,9 +25,6 @@ func init() {
 	taskDescID := taskFields[0].Descriptor()
 	// task.DefaultID holds the default value on creation for the id field.
 	task.DefaultID = taskDescID.Default.(func() uuid.UUID)
-	timemixinHooks := schema.TimeMixin{}.Hooks()
-	timemixin.Hooks[0] = timemixinHooks[0]
-	timemixin.Hooks[1] = timemixinHooks[1]
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks0 := userMixin[0].Hooks()
 	user.Hooks[0] = userMixinHooks0[0]
