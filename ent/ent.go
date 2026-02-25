@@ -12,7 +12,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/intyouss/AI-Task-Hub/ent/softdeletemixin"
 	"github.com/intyouss/AI-Task-Hub/ent/task"
+	"github.com/intyouss/AI-Task-Hub/ent/timemixin"
 	"github.com/intyouss/AI-Task-Hub/ent/user"
 )
 
@@ -74,8 +76,10 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			task.Table: task.ValidColumn,
-			user.Table: user.ValidColumn,
+			softdeletemixin.Table: softdeletemixin.ValidColumn,
+			task.Table:            task.ValidColumn,
+			timemixin.Table:       timemixin.ValidColumn,
+			user.Table:            user.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

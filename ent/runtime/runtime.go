@@ -5,7 +5,9 @@ package runtime
 import (
 	"github.com/google/uuid"
 	"github.com/intyouss/AI-Task-Hub/ent/schema"
+	"github.com/intyouss/AI-Task-Hub/ent/softdeletemixin"
 	"github.com/intyouss/AI-Task-Hub/ent/task"
+	"github.com/intyouss/AI-Task-Hub/ent/timemixin"
 	"github.com/intyouss/AI-Task-Hub/ent/user"
 )
 
@@ -13,6 +15,10 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	softdeletemixinHooks := schema.SoftDeleteMixin{}.Hooks()
+	softdeletemixin.Hooks[0] = softdeletemixinHooks[0]
+	softdeletemixinInters := schema.SoftDeleteMixin{}.Interceptors()
+	softdeletemixin.Interceptors[0] = softdeletemixinInters[0]
 	taskMixin := schema.Task{}.Mixin()
 	taskMixinHooks0 := taskMixin[0].Hooks()
 	taskHooks := schema.Task{}.Hooks()
@@ -25,6 +31,9 @@ func init() {
 	taskDescID := taskFields[0].Descriptor()
 	// task.DefaultID holds the default value on creation for the id field.
 	task.DefaultID = taskDescID.Default.(func() uuid.UUID)
+	timemixinHooks := schema.TimeMixin{}.Hooks()
+	timemixin.Hooks[0] = timemixinHooks[0]
+	timemixin.Hooks[1] = timemixinHooks[1]
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks0 := userMixin[0].Hooks()
 	user.Hooks[0] = userMixinHooks0[0]

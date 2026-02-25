@@ -9,6 +9,18 @@ import (
 	"github.com/intyouss/AI-Task-Hub/ent"
 )
 
+// The SoftDeleteMixinFunc type is an adapter to allow the use of ordinary
+// function as SoftDeleteMixin mutator.
+type SoftDeleteMixinFunc func(context.Context, *ent.SoftDeleteMixinMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SoftDeleteMixinFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SoftDeleteMixinMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SoftDeleteMixinMutation", m)
+}
+
 // The TaskFunc type is an adapter to allow the use of ordinary
 // function as Task mutator.
 type TaskFunc func(context.Context, *ent.TaskMutation) (ent.Value, error)
@@ -19,6 +31,18 @@ func (f TaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TaskMutation", m)
+}
+
+// The TimeMixinFunc type is an adapter to allow the use of ordinary
+// function as TimeMixin mutator.
+type TimeMixinFunc func(context.Context, *ent.TimeMixinMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TimeMixinFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TimeMixinMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TimeMixinMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

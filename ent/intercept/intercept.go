@@ -9,7 +9,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/intyouss/AI-Task-Hub/ent"
 	"github.com/intyouss/AI-Task-Hub/ent/predicate"
+	"github.com/intyouss/AI-Task-Hub/ent/softdeletemixin"
 	"github.com/intyouss/AI-Task-Hub/ent/task"
+	"github.com/intyouss/AI-Task-Hub/ent/timemixin"
 	"github.com/intyouss/AI-Task-Hub/ent/user"
 )
 
@@ -69,6 +71,33 @@ func (f TraverseFunc) Traverse(ctx context.Context, q ent.Query) error {
 	return f(ctx, query)
 }
 
+// The SoftDeleteMixinFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SoftDeleteMixinFunc func(context.Context, *ent.SoftDeleteMixinQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SoftDeleteMixinFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SoftDeleteMixinQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SoftDeleteMixinQuery", q)
+}
+
+// The TraverseSoftDeleteMixin type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSoftDeleteMixin func(context.Context, *ent.SoftDeleteMixinQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSoftDeleteMixin) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSoftDeleteMixin) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SoftDeleteMixinQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SoftDeleteMixinQuery", q)
+}
+
 // The TaskFunc type is an adapter to allow the use of ordinary function as a Querier.
 type TaskFunc func(context.Context, *ent.TaskQuery) (ent.Value, error)
 
@@ -94,6 +123,33 @@ func (f TraverseTask) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.TaskQuery", q)
+}
+
+// The TimeMixinFunc type is an adapter to allow the use of ordinary function as a Querier.
+type TimeMixinFunc func(context.Context, *ent.TimeMixinQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f TimeMixinFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.TimeMixinQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.TimeMixinQuery", q)
+}
+
+// The TraverseTimeMixin type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseTimeMixin func(context.Context, *ent.TimeMixinQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseTimeMixin) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseTimeMixin) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.TimeMixinQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.TimeMixinQuery", q)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -126,8 +182,12 @@ func (f TraverseUser) Traverse(ctx context.Context, q ent.Query) error {
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
+	case *ent.SoftDeleteMixinQuery:
+		return &query[*ent.SoftDeleteMixinQuery, predicate.SoftDeleteMixin, softdeletemixin.OrderOption]{typ: ent.TypeSoftDeleteMixin, tq: q}, nil
 	case *ent.TaskQuery:
 		return &query[*ent.TaskQuery, predicate.Task, task.OrderOption]{typ: ent.TypeTask, tq: q}, nil
+	case *ent.TimeMixinQuery:
+		return &query[*ent.TimeMixinQuery, predicate.TimeMixin, timemixin.OrderOption]{typ: ent.TypeTimeMixin, tq: q}, nil
 	case *ent.UserQuery:
 		return &query[*ent.UserQuery, predicate.User, user.OrderOption]{typ: ent.TypeUser, tq: q}, nil
 	default:

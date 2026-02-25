@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	ent2 "github.com/intyouss/AI-Task-Hub/ent"
 	"github.com/intyouss/AI-Task-Hub/ent/hook"
-	"github.com/intyouss/AI-Task-Hub/ent/schema/hooks"
 	"github.com/intyouss/AI-Task-Hub/ent/task"
 )
 
@@ -41,7 +40,7 @@ func (Task) Edges() []ent.Edge {
 
 func (Task) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		hooks.TimeMixin{},
+		TimeMixin{},
 	}
 }
 
