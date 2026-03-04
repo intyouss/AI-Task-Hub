@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"regexp"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/intyouss/AI-Task-Hub/config"
 	"github.com/intyouss/AI-Task-Hub/ent"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/uptrace/opentelemetry-go-extra/otelsql"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
@@ -17,7 +19,10 @@ type Data struct {
 }
 
 func NewDBClient(config config.Config) (*Data, func(), error) {
-	client := setClient(config.Database)
+	client, err := setClient(config.Database)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	if config.Mode == "debug" {
 		client = client.Debug()
@@ -31,7 +36,7 @@ func NewDBClient(config config.Config) (*Data, func(), error) {
 	}, cleanup, nil
 }
 
-func setClient(dbConfig config.Database) *ent.Client {
+func setClient(dbConfig config.Database) (*ent.Client, error) {
 	reg := regexp.MustCompile(`^file:\./(?P<name>[^.]+)\.db(?:\?.+)?$`)
 	match := reg.FindStringSubmatch(dbConfig.Dsn)
 	dbName := ""
@@ -42,7 +47,7 @@ func setClient(dbConfig config.Database) *ent.Client {
 		otelsql.WithAttributes(semconv.DBSystemSqlite),
 		otelsql.WithDBName(dbName))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// 连接池配置
@@ -53,5 +58,9 @@ func setClient(dbConfig config.Database) *ent.Client {
 
 	driver := sql.OpenDB(dialect.SQLite, otelDB)
 	client := ent.NewClient(ent.Driver(driver))
-	return client
+	err = client.Schema.Create(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }
