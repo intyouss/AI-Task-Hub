@@ -1,4 +1,4 @@
-rate_limiter:
-  enabled: true
-  limit: 10
-  every_time: 1
+database:
+  driver: sqlite
+  dsn: file:./data.db?parseTime=true
+mode: debug
